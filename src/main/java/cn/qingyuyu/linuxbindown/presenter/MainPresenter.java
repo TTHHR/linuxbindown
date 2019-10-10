@@ -25,15 +25,9 @@ public class MainPresenter {
             running = true;
             mi.setRunLog("正在启动");
             new Thread(() -> {
-                while (true) {
-                    if (启动进度 < 70)
-                        启动进度++;
-                    mi.setRunningState(启动进度 + "%");
-                    if (启动进度 == 100) {
-                    }
-                }
-            }).start();
 
+                running=false;
+            }).start();
 
         }
 

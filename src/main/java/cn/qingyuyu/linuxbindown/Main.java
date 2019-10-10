@@ -36,7 +36,7 @@ public class Main extends Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        primaryStage.setTitle("锐铎自动化工厂");
+        primaryStage.setTitle("Linux裸机程序烧写器");
         primaryStage.setScene(root);
         if (wc != null) {
             WebViewControl finalWc = wc;
