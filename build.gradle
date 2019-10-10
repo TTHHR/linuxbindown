@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+}
+
+group 'qingyuyu.cn'
+version '1.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+    maven {
+        url "https://maven.mangoautomation.net/repository/ias-release/"
+    }
+}
+// 打完整jar包
+def mainClassName = "cn.qingyuyu.linuxbindown.Main"
+jar {
+    manifest {
+        attributes "Main-Class": "$mainClassName"
+    }
+    from { 
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+//指定编译的编码
+tasks.withType(JavaCompile){
+    options.encoding = "UTF-8"
+}

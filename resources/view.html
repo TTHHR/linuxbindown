@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>锐铎自动化工厂展示</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script src="layui/layui.all.js" charset="utf-8"></script>
+	<script src="mqtt/mqtt.min.js" charset="utf-8"></script>
+</head>
+<body>
+<center>
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+        <legend id="filePath">锐铎自动化工厂展示</legend>
+    </fieldset>
+
+    <fieldset class="layui-elem-field site-demo-button" style="margin-top: 30px;">
+        <legend>运行状态</legend>
+		<center><img src="ligong.png" alt="" /> <img src="rido.jpg" alt="" /></center>
+    </fieldset>
+
+<table class="layui-table" lay-even="" lay-skin="row">
+  <colgroup>
+    <col width="150">
+    <col width="150">
+    <col width="200">
+    <col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th >AGV车</th>
+      <th>电量</th>
+      <th>任务</th>
+      <th>当前站点</th>
+	  <th>配置</th>
+    </tr> 
+  </thead>
+  <tbody>
+    <tr>
+      <td>辊筒1</td>
+      <td id='辊筒agv1号/power'>30</td>
+      <td id='task1'>待机</td>
+      <td id='辊筒agv1号/station'>1</td>
+	  <td>设置任务车</td>
+    </tr>
+    <tr>
+      <td>辊筒2</td>
+      <td id='辊筒agv2号/power'>90</td>
+      <td id='task2'>待机</td>
+      <td id='辊筒agv2号/station'>1</td>
+	  <td><button type="button" class="layui-btn layui-btn-normal"  onclick="setCar('辊筒agv2号')">设置任务车</button></td>
+    </tr>
+    <tr>
+      <td>辊筒3</td>
+      <td id='辊筒agv3号/power'>90</td>
+      <td id='task3'>待机</td>
+      <td id='辊筒agv3号/station'> 1</td>
+	  <td><button type="button" class="layui-btn layui-btn-normal"  onclick="setCar('辊筒agv3号')">设置任务车</button></td>
+    </tr>
+    <tr>
+      <td>复合</td>
+      <td id='复合agv1号/power'>90</td>
+      <td >互动</td>
+      <td id='复合agv1号/station'>1</td>
+	  <td>设置任务车</td>
+    </tr>
+  </tbody>
+</table>  
+  
+      <fieldset class="layui-elem-field site-demo-button" style="margin-top: 30px;">
+        <legend>互动</legend>
+		<blockquote class="layui-elem-quote" id='next'>当前任务--2。下一个任务--2</blockquote>
+        <div>
+            <button type="button" class="layui-btn layui-btn-normal"  onclick="back(‘28’)">工位一 （演示台）</button>
+            <button type="button" class="layui-btn layui-btn-warn"  onclick="back(‘31’)">工位二</button>
+			  <button type="button" class="layui-btn layui-btn-normal"  onclick="back(‘35’)">工位三</button>
+            <button type="button" class="layui-btn layui-btn-warn"  onclick="doTask()">开始任务</button>
+			<button type="button" class="layui-btn layui-btn-warn"  onclick="change()">切换任务</button>
+        </div>
+    </fieldset>
+
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+        <legend id="">Version local 190908</legend>
+    </fieldset>
+</center>
+<script>
+
+layui.use('element', function(){
+  var element = layui.element;
+});
+
+</script>
+<script>
+ var options = {
+    //mqtt客户端的id，这里面应该还可以加上其他参数，具体看官方文档
+      clientId: 'mqtt_web'
+    }
+    
+    //浏览器采用websocket协议，host主机地址为192.168.0.200，端口为9001，路径为/mqtt
+    var client = mqtt.connect("ws://127.0.0.1:8083/mqtt",options) // you add a ws:// url here
+
+    //建立连接
+    client.on('connect', function () {
+      console.log("connect success!")
+      //订阅主题 presence
+      client.subscribe('/center/#', function (err) {
+        if (!err) {
+          console.log("subscribe success!")
+          //发布主题presence,消息内容为Hello mqtt
+         // client.publish('presence', 'Hello mqtt')
+        }else{
+        //打印错误
+          console.log(err)
+        }
+      })
+    })
+    
+    //如果连接错误，打印错误
+    client.on('error', function (err) {
+      console.log(err)
+      client.end()
+    })
+
+    //如果client订阅主题成功，那么这里就是当接收到自己订阅主题的处理逻辑
+    client.on('message', function (topic, message) {
+      // message is Buffer,此处就是打印消息的具体内
+
+	var topics=topic.toString()
+	if(topics.search("task")!=-1)
+	{
+	for (var i = 1; i <4; i++) { 
+    document.getElementById("task"+i).innerHTML=message.toString()
+     }
+	}
+	else if(topics.search("next")!=-1)
+	{
+	
+    document.getElementById("next").innerHTML=message.toString()
+	}
+else
+	//console.log(topics.substring(topics.lastIndexOf('\/', topics.lastIndexOf('\/') - 1) + 1))
+	 document.getElementById(topics.substring(topics.lastIndexOf('\/', topics.lastIndexOf('\/') - 1) + 1)).innerHTML=message.toString()
+})
+
+function back(poi)
+{
+client.publish('/web/复合agv1号/back', poi)
+}
+function doTask()
+{
+client.publish('/web/doTask', 'true')
+}
+function change()
+{
+client.publish('/web/change', 'true')
+}
+function setCar(car)
+{
+client.publish('/web/'+car+'/set', 'true')
+}
+
+</script>
+</body>
+</html>
