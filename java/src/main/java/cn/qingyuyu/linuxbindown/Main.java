@@ -21,11 +21,11 @@ public class Main extends Application {
         try {
             // 这里的root从FXML文件中加载进行初始化，这里FXMLLoader类用于加载FXML文件
             FXMLLoader fxmlLoader = new FXMLLoader();
-            //String path=Main.class.getProtectionDomain().getCodeSource().getLocation().toString();
-            //path=path.substring(0,path.lastIndexOf("/"))+"/resources/";
-           // System.out.println(path);
+//            String path=Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+//            path=path.substring(0,path.lastIndexOf("/"))+"/resources/";
+//           System.out.println(path);
            // Constant.resourceFolder=path;
-            fxmlLoader.setLocation(new URL(Constant.resourceFolder+"web.fxml"));
+            fxmlLoader.setLocation(new URL("file:"+Constant.resourceFolder+"web.fxml"));
             fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
 
             AnchorPane layout = fxmlLoader.load();
@@ -37,12 +37,14 @@ public class Main extends Application {
             e.printStackTrace();
         }
         primaryStage.setTitle("Linux裸机程序烧写器");
+        primaryStage.setHeight(400);
+        primaryStage.setWidth(600);
         primaryStage.setScene(root);
         if (wc != null) {
             WebViewControl finalWc = wc;
             primaryStage.setOnCloseRequest(event -> finalWc.close());
             primaryStage.getIcons().add(new Image(
-                   Constant.resourceFolder+"icon.png"));
+                    "file:"+Constant.resourceFolder+"icon.png"));
 
         }
         primaryStage.show();

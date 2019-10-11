@@ -11,8 +11,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.web.WebView;
 
+import javafx.stage.FileChooser;
 import netscape.javascript.JSObject;
 
+import java.io.File;
 import java.net.URL;
 
 public class WebViewControl {
@@ -26,7 +28,7 @@ public class WebViewControl {
     public void init() {
         mp = new MainPresenter(this);
         try {
-            webView.getEngine().load(new URL(Constant.resourceFolder+"centerControl.html").toString());
+            webView.getEngine().load(new URL("file:"+Constant.resourceFolder+"view.html").toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -46,7 +48,7 @@ public class WebViewControl {
 
     private void reloadLocal() {
         try {
-            webView.getEngine().load(new URL(Constant.resourceFolder+"centerControl.html").toString());
+            webView.getEngine().load(new URL("file:"+Constant.resourceFolder+"view.html").toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -58,6 +60,20 @@ public class WebViewControl {
     public void close() {
         mp.close();
     }
+    public void about() {
+        Platform.runLater(
+                () -> {
+                    webView.getEngine().executeScript("javascript:dialog('仅支持正点原子Linux Alpha开发板，本程序开源 ','true')");
+                });
+    }
+    public void loadGithub()
+    {
+        try {
+            webView.getEngine().load(new URL(Constant.github).toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public void setRunLog(String text) {
         System.out.println(text);
@@ -65,30 +81,40 @@ public class WebViewControl {
                 () -> webView.getEngine().executeScript("javascript:log('" + text + "')"));
     }
 
-    public void setRunningState(String percent) {
-        Platform.runLater(
-                () -> webView.getEngine().executeScript("javascript:setRunState('" + percent + "')"));
-    }
-
     // JavaScript 接口0.
     public class MyJsObject {
 
         @SuppressWarnings("unused")
-        public void start() {
+        public void start(String sd,String pass) {
 
-            mp.start();
+            mp.start(sd,pass);
 
+        }
+        public String getSDSize(String sd)
+        {
+           return mp.getSize(sd);
         }
 
         @SuppressWarnings("unused")
-        public void stop() {
+        public String selectFile(String filter) {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("选择设备文件");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("File", filter)
+            );
+            File file =
+                    fileChooser.showOpenDialog(null);
+            if (file != null) {
+                mp.filePath=file.getAbsolutePath();
+                return file.getAbsolutePath();
+            }
 
-            mp.stop();
-
+            return "";
+        }
+        public String[] getSDs()
+        {
+            return mp.getSDs();
         }
 
-        public void close() {
-            Platform.exit();
-        }
     }
 }
